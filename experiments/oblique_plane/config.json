@@ -1,0 +1,12 @@
+{
+  "seed": 20261029,
+  "height_body_agl_m": 50.0,
+  "gimbal_tilts_deg": [0, 15, 30, 45],
+  "camera": {"width": 640, "height": 480, "hfov_deg": 70},
+  "mount_origin_body_frd_m": [0.10, 0.03, 0.05],
+  "camera_offset_gimbal_frd_m": [0.02, 0.0, 0.10],
+  "sensor_sigma": {"height_m": 0.25, "body_angle_deg": 0.1, "gimbal_angle_deg": 0.2, "pixel_px": 1.0, "map_m": 0.25},
+  "correct_position_threshold_m": 5.0,
+  "verification": {"min_inliers": 16, "min_inlier_ratio": 0.30, "min_coverage": 0.08, "min_eigen_ratio": 0.01, "max_median_reprojection_px": 2.5, "max_orientation_disagreement_deg": 5, "max_xy_sigma_m": 15},
+  "notes": "Synthetic sensor errors are experiment assumptions, not measured hardware specifications. Plane z=0 is a simulation datum, not surveyed terrain elevation."
+}
