@@ -1,0 +1,16 @@
+.venv/
+.modelos_agl/
+.mplconfig/
+__pycache__/
+*.pyc
+outputs/
+informes/
+diagnostico_equipo.json
+*.tif
+*.tiff
+*.npz
+*.pt
+*.pth
+*.log
+*.mp4
+sitl_assets/**/textures/*.png

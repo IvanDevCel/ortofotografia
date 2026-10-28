@@ -1,0 +1,126 @@
+[
+  {
+    "nombre": "01_montana_calderona",
+    "centro_latitud": 39.704,
+    "centro_longitud": -0.445,
+    "crs": "EPSG:25830",
+    "resolucion_salida_m": 0.25,
+    "pixeles": [
+      6000,
+      6000
+    ],
+    "bounds_utm": [
+      718296,
+      4397276,
+      719796,
+      4398776
+    ],
+    "fuente": "https://terramapas.icv.gva.es/0202_2025PVAL0015",
+    "capa": "2025PVAL0015_RGB",
+    "anio_fuente": 2025,
+    "resolucion_publicada_fuente_m": 0.15,
+    "procedencia": "Exportacion WMS RGB; remuestreada, no TIFF original",
+    "solicitudes": [
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=718296%2C4398026%2C719046%2C4398776&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE",
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=719046%2C4398026%2C719796%2C4398776&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE",
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=718296%2C4397276%2C719046%2C4398026&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE",
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=719046%2C4397276%2C719796%2C4398026&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE"
+    ],
+    "archivo": "01_montana_calderona.tif",
+    "bytes": 16036123,
+    "sha256": "b71d397c5790193982a3689c2cbbc30d325587321402ae8ae36b8d7d04028bda"
+  },
+  {
+    "nombre": "02_urbano_lliria",
+    "centro_latitud": 39.628,
+    "centro_longitud": -0.596,
+    "crs": "EPSG:25830",
+    "resolucion_salida_m": 0.25,
+    "pixeles": [
+      6000,
+      6000
+    ],
+    "bounds_utm": [
+      705575,
+      4388482,
+      707075,
+      4389982
+    ],
+    "fuente": "https://terramapas.icv.gva.es/0202_2025PVAL0015",
+    "capa": "2025PVAL0015_RGB",
+    "anio_fuente": 2025,
+    "resolucion_publicada_fuente_m": 0.15,
+    "procedencia": "Exportacion WMS RGB; remuestreada, no TIFF original",
+    "solicitudes": [
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=705575%2C4389232%2C706325%2C4389982&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE",
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=706325%2C4389232%2C707075%2C4389982&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE",
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=705575%2C4388482%2C706325%2C4389232&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE",
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=706325%2C4388482%2C707075%2C4389232&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE"
+    ],
+    "archivo": "02_urbano_lliria.tif",
+    "bytes": 15435213,
+    "sha256": "2b882f1b46faad2d29df0b8169a3feb01bb3141c47a6a78b70d816212dad1ad3"
+  },
+  {
+    "nombre": "03_playa_el_saler",
+    "centro_latitud": 39.382,
+    "centro_longitud": -0.324,
+    "crs": "EPSG:25830",
+    "resolucion_salida_m": 0.25,
+    "pixeles": [
+      6000,
+      6000
+    ],
+    "bounds_utm": [
+      729735,
+      4361835,
+      731235,
+      4363335
+    ],
+    "fuente": "https://terramapas.icv.gva.es/0202_2025PVAL0015",
+    "capa": "2025PVAL0015_RGB",
+    "anio_fuente": 2025,
+    "resolucion_publicada_fuente_m": 0.15,
+    "procedencia": "Exportacion WMS RGB; remuestreada, no TIFF original",
+    "solicitudes": [
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=729735%2C4362585%2C730485%2C4363335&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE",
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=730485%2C4362585%2C731235%2C4363335&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE",
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=729735%2C4361835%2C730485%2C4362585&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE",
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=730485%2C4361835%2C731235%2C4362585&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE"
+    ],
+    "archivo": "03_playa_el_saler.tif",
+    "bytes": 9683373,
+    "sha256": "1881a5de4a20292e18ed886dcfe614840ae76103497809f75db9ee92d512faa8"
+  },
+  {
+    "nombre": "04_mar_costa_sagunto",
+    "centro_latitud": 39.649,
+    "centro_longitud": -0.208,
+    "crs": "EPSG:25830",
+    "resolucion_salida_m": 0.25,
+    "pixeles": [
+      6000,
+      6000
+    ],
+    "bounds_utm": [
+      738808,
+      4391777,
+      740308,
+      4393277
+    ],
+    "fuente": "https://terramapas.icv.gva.es/0202_2025PVAL0015",
+    "capa": "2025PVAL0015_RGB",
+    "anio_fuente": 2025,
+    "resolucion_publicada_fuente_m": 0.15,
+    "procedencia": "Exportacion WMS RGB; remuestreada, no TIFF original",
+    "solicitudes": [
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=738808%2C4392527%2C739558%2C4393277&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE",
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=739558%2C4392527%2C740308%2C4393277&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE",
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=738808%2C4391777%2C739558%2C4392527&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE",
+      "https://terramapas.icv.gva.es/0202_2025PVAL0015?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025PVAL0015_RGB&STYLES=&SRS=EPSG%3A25830&BBOX=739558%2C4391777%2C740308%2C4392527&WIDTH=3000&HEIGHT=3000&FORMAT=image%2Fpng&TRANSPARENT=FALSE"
+    ],
+    "archivo": "04_mar_costa_sagunto.tif",
+    "bytes": 5146811,
+    "sha256": "d7ae117ae84c6c21eab0182588e3929f63d9b68db4c6edb5a99abd72c199b752"
+  }
+]

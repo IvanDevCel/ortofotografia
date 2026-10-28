@@ -3,13 +3,24 @@ import json
 from pathlib import Path
 import shutil
 import math
+import re
 from pyulog import ULog
 
 root=Path(__file__).resolve().parent.parent
 meta=json.loads((root/'informes/ultima_prueba.json').read_text(encoding='utf8'));out=root/'informes'/meta['name']
 reg=json.loads((Path.home()/'uav-sitl/demo_actual.json').read_text());run=Path(reg['run'])
-sources=list((Path.home()/'uav-sitl/PX4-Autopilot/build/px4_sitl_default/rootfs/log').rglob('*.ulg'))
-latest=max(sources,key=lambda p:p.stat().st_mtime);shutil.copy2(latest,out/'registros_px4'/latest.name)
+if run.name!=meta['name']:raise RuntimeError('El registro activo no corresponde al informe solicitado')
+sources=list((run/'log').rglob('*.ulg'))
+if not sources:sources=list((out/'registros_px4').glob('*.ulg'))
+if not sources:
+    # Shared PX4 rootfs: select only the exact path logged by this process.
+    recorded=re.findall(r'\./log/([0-9-]+/[0-9_]+\.ulg)',(run/'px4_gazebo.log').read_text())
+    sources=[Path.home()/'uav-sitl/PX4-Autopilot/build/px4_sitl_default/rootfs/log'/p for p in set(recorded)]
+    sources=[p for p in sources if p.is_file()]
+if not sources:raise RuntimeError('No hay ULog atribuible a esta ejecución; no se usa el registro de otro vuelo')
+latest=max(sources,key=lambda p:p.stat().st_mtime)
+destination=out/'registros_px4'/latest.name
+if latest.resolve()!=destination.resolve():shutil.copy2(latest,destination)
 u=ULog(str(out/'registros_px4'/latest.name));result={}
 fields={
  'estimator_status_flags':['timestamp','cs_gnss_pos','cs_gnss_vel','cs_gps_hgt','cs_ev_pos','cs_ev_vel','cs_ev_hgt','cs_ev_yaw','cs_wind_dead_reckoning','cs_inertial_dead_reckoning','cs_fuse_aspd','cs_baro_hgt'],

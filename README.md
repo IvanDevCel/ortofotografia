@@ -1,5 +1,40 @@
 # Localización de un avión mediante ortofotografía
 
+En esta descarga, la estructura completa está dentro de `para_github/`.
+Para instalar o reanudar desde esta carpeta en Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\INSTALAR.ps1
+```
+
+El proceso verifica CUDA, descarga los modelos fijados y prepara PX4/Gazebo en
+Ubuntu 24.04 de WSL. No inicia vuelos. El resultado y los recursos pendientes
+quedan en `ESTADO_INSTALACION.md`; los registros están en
+`para_github/outputs/instalacion/`. Se necesita acceso administrativo a WSL para
+instalar los paquetes nativos. Para importar una copia de los mapas e índices:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\INSTALAR.ps1 --fase recursos --origen "D:\copia_del_proyecto"
+```
+
+Los cuatro mapas aportados están en `archivosTiff/`, en EPSG:25830. Los escenarios
+nuevos se guardan por separado en `para_github/outputs/escenarios/`. Desde esta
+carpeta, para preparar un escenario y una misión de siete puntos sobre Sagunto:
+
+```powershell
+para_github/.venv/Scripts/python.exe para_github/tools/preparar_escenarios.py --escenario 04_mar_costa_sagunto
+para_github/.venv/Scripts/python.exe para_github/tools/plan_sagunto_siete_puntos.py
+para_github/.venv/Scripts/python.exe para_github/demo_sitl/preparar_demo.py --escenario 04_mar_costa_sagunto --plan siete_puntos
+```
+
+El trabajador se ejecuta con `para_github/.venv/Scripts/python.exe
+para_github/demo_sitl/worker_nav_cuda.py --keep-viewer`. El lanzador WSL recibe la
+ruta de `para_github`, no la carpeta superior. Conserva la comprobación de la
+captura de Gazebo antes de armar. Sagunto pausa al alcanzar P7 o al interrumpirse
+la misión; no añade una órbita final. El visor es http://localhost:18081/.
+Dos simulaciones simultáneas necesitan puertos, registros, instancias PX4 y
+mundos independientes; los lanzadores actuales son para una simulación cada vez.
+
 Proyecto didáctico: GeoTIFF → búsqueda DINOv2 → SuperPoint/LightGlue/RANSAC → posición visual → fusión en PX4 SITL. Avión RC Cessna y Gazebo Harmonic. Solo simulación; no preparado para controlar una aeronave real.
 
 La última prueba A→B→C→A completó el recorrido: 150 imágenes, 132 aceptadas (88 %), error medio 0,691 m y máximo 4,860 m. Hubo interrupciones de visión; no supera la validación estricta de fusión continua. Se usó la propia ortofoto como escena y mapa: no es validación con imágenes independientes. Los resultados pequeños están en `examples/resultados/`.

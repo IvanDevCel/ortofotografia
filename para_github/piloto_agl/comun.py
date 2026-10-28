@@ -10,8 +10,8 @@ OUT = ROOT/'outputs'/'piloto_agl'
 MODELS = ROOT/'.modelos_agl'
 
 
-def config():
-    return json.loads((ROOT/'piloto_agl/config.json').read_text(encoding='utf8'))
+def config(path=None):
+    return json.loads((ROOT/(path or 'piloto_agl/config.json')).read_text(encoding='utf8'))
 
 
 def save_json(path, value):
@@ -56,14 +56,14 @@ class Resources:
                 'rss_peak_mib':self.peak/2**20,'rss_increase_mib':(self.peak-self.start_rss)/2**20}
 
 
-def setup():
+def setup(path=None):
     os.environ.setdefault('TORCH_HOME',str(MODELS/'torch'))
     os.environ.setdefault('MPLCONFIGDIR',str(ROOT/'.mplconfig'))
     OUT.mkdir(parents=True,exist_ok=True)
     import cv2
     import torch
     import numpy as np
-    cfg=config()
+    cfg=config(path)
     torch.set_num_threads(cfg['threads'])
     cv2.setNumThreads(cfg['threads'])
     torch.manual_seed(cfg['seed'])

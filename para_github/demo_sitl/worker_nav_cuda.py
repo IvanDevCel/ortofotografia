@@ -10,6 +10,7 @@ import time
 import urllib.request
 import urllib.error
 import http.client
+from http.client import HTTPException
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from PIL import Image,ImageDraw,ImageFont
 import numpy as np
@@ -28,14 +29,14 @@ def safe(v):
     if isinstance(v,np.generic):return v.item()
     raise TypeError(str(type(v)))
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--smoke',action='store_true');p.add_argument('--output-dir');args=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--smoke',action='store_true');p.add_argument('--output-dir');p.add_argument('--keep-viewer',action='store_true');args=p.parse_args()
     last=json.loads((ROOT/'informes/ultima_prueba.json').read_text());out=Path(last['report']);cfg=json.loads((out/'configuracion.json').read_text(encoding='utf8'))
     total=int(cfg.get('flight_effective_s',45))
     source_out=out
     if args.output_dir:
         if not args.smoke:p.error('--output-dir se admite solo con --smoke')
         out=Path(args.output_dir);out.mkdir(parents=True,exist_ok=True)
-    engine=CudaNavigatorLocalizer()
+    engine=CudaNavigatorLocalizer(cfg.get('pilot_config'))
     (out/'cuda_dispositivos.json').write_text(json.dumps(engine.proof,indent=2))
     print('CUDA lista',engine.proof,flush=True)
     if args.smoke:
@@ -66,21 +67,22 @@ def main():
             except OSError:pass
         return ImageFont.load_default(size=size)
     font=portable_font(21);title=portable_font(27)
-    mapim=Image.open(ROOT/'assets/mapa_T2.jpg').convert('RGB').resize((600,600))
+    mapim=Image.open(ROOT/cfg.get('map_image','assets/mapa_T2.jpg')).convert('RGB').resize((600,600))
     def render():
         with guard:s=dict(latest['state']);r=latest['result'];blob=latest['image']
         im=Image.new('RGB',(1280,860),'#122337');d=ImageDraw.Draw(im)
         t=s.get('sim_s',0)-(s.get('start_sim_s') or s.get('sim_s',0));phase=s.get('phase','PREPARACION')
+        if s.get('done') and 'PAUSADO' not in phase:phase='FIN · PAUSADO'
         d.text((20,16),f'RC Cessna · CUDA · vuelo {t:.1f} / {total} s',font=title,fill='white')
         d.text((850,16),phase,font=title,fill='#ffad8f' if 'OUT' in phase else '#78edbc')
         if blob:
             try:im.paste(Image.open(io.BytesIO(blob)).convert('RGB'),(20,70))
             except Exception:pass
         im.paste(mapim,(670,65))
-        def xy(e,n):return (int(670+(e-609210)/1200*600),int(65+(4840270-n)/1200*600))
         # Map extents are computed from the geotransform; no truth displayed live.
         reg=cfg['region'];tr=cfg['source_transform'];west=tr[2]+reg['col']*tr[0];north=tr[5]+reg['row']*tr[4]
-        def xy(e,n):return(int(670+(e-west)/1200*600),int(65+(north-n)/1200*600))
+        map_width=reg['width']*abs(tr[0]);map_height=reg['height']*abs(tr[4])
+        def xy(e,n):return(int(670+(e-west)/map_width*600),int(65+(north-n)/map_height*600))
         route=route_points(cfg);points=[xy(p['utm_e'],p['utm_n']) for _,p in route];d.line(points,fill='#f5cf62',width=3)
         for (k,_),point in zip(route,points):d.ellipse((point[0]-5,point[1]-5,point[0]+5,point[1]+5),fill='#f5cf62');d.text(point,k,font=font,fill='white')
         correction=s.get('last_correction');age=None if not correction else s.get('sim_s',0)-correction['capture_sim_s']
@@ -94,7 +96,7 @@ def main():
         d.text((20,686),f'PX4 {s.get("mode","?")} · GNSS fusionado: {flags.get("cs_gnss_pos","?")} · visión fusionada: {flags.get("cs_ev_pos","?")}',font=font,fill='white')
         d.text((20,728),'Captura + IA a 1 Hz. Odometría propagada a 20 Hz, con edad e incertidumbre.',font=font,fill='white')
         d.text((20,768),'Posición real Gazebo reservada al análisis posterior; no entra al navegador.',font=font,fill='#c1d7e9')
-        d.text((20,808),'DINOv2 + SuperPoint + LightGlue en RTX 5060 / CUDA. Sin posición real ni GNSS postcorte.',font=font,fill='#f2d780')
+        d.text((20,808),f'DINOv2 + SuperPoint + LightGlue · {engine.proof["gpu"]} / CUDA.',font=font,fill='#f2d780')
         return im
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
@@ -137,6 +139,9 @@ def main():
             except Exception:continue
         with guard:s=dict(latest['state'])
         if prev is not None and s.get('start_sim_s') is not None:
+            if cfg.get('stop_at_mission_end') and s.get('done'):
+                timeline.duration_s=min(total,max(0,s['sim_s']-s['start_sim_s']))
+                timeline.duration=timeline.duration_s
             tail=timeline.slots_due(s['start_sim_s'],s.get('sim_s',0),finish=bool(s.get('done') and s.get('capture_count',0)>=total))
             for _ in range(tail):video.write(prev)
             repeated+=tail
@@ -163,14 +168,17 @@ def main():
             while time.monotonic()<end:
                 try:
                     status=get('/status')
-                except (urllib.error.URLError,TimeoutError,ConnectionError,http.client.HTTPException):
+                except (urllib.error.URLError,TimeoutError,ConnectionError,HTTPException):
                     time.sleep(.04);continue
                 n,dropped=policy.select(min(total,status.get('capture_count',0)))
                 if n is not None:
                     for omitted in dropped:skip(get(f'/frame/{omitted}'),'reemplazada por una captura más reciente',status['sim_s'])
                     frame=get(f'/frame/{n}');break
+                if status.get('done'):break
                 time.sleep(.04)
-            if not frame:raise RuntimeError('No llegó una captura nueva; no se inventa una imagen')
+            if not frame:
+                if status.get('done'):break
+                raise RuntimeError('No llegó una captura nueva; no se inventa una imagen')
             if not policy.may_start(frame['capture_sim_s'],status['sim_s']):
                 skip(frame,'caducada antes de iniciar IA',status['sim_s']);continue
             rgb=np.array(Image.open(out/frame['image_file']).convert('RGB'))
@@ -197,8 +205,14 @@ def main():
         try:
             final_status=get('/status')
             with guard:latest['state']=final_status
-        except (urllib.error.URLError,TimeoutError,ConnectionError,http.client.HTTPException):pass
-        exit_event.set();video_thread.join(timeout=3);http.shutdown()
+        except (urllib.error.URLError,TimeoutError,ConnectionError,HTTPException):pass
+        exit_event.set();video_thread.join(timeout=3)
         (out/'cuda_final.json').write_text(json.dumps({'proof':engine.proof,'input_devices':engine.input_devices,'calls':engine.calls,'frames_processed':sum(r.get('processed',True) for r in rows),'frames_observed':len(rows),'frames_skipped':discarded},indent=2))
         engine.engine.close()
+        if args.keep_viewer:
+            buf=io.BytesIO();render().save(buf,format='JPEG',quality=93)
+            with guard:latest['panel']=buf.getvalue()
+            print('Visor final disponible en http://localhost:18081/',flush=True)
+            threading.Event().wait()
+        http.shutdown()
 if __name__=='__main__':main()

@@ -25,7 +25,7 @@ class Localizer:
         self.cfg=cfg
         self.device=cfg.get('device','cpu')
         self.dino=dino(device=self.device)
-        self.sp,self.lg=local_models(device=self.device)
+        self.sp,self.lg=local_models(device=self.device,cfg=cfg)
         self.sift=cv2.SIFT_create(nfeatures=1024,contrastThreshold=.025)
         self.bf=cv2.BFMatcher(cv2.NORM_L2)
         self.indices=load_indices(cfg)

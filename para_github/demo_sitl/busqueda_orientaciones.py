@@ -24,7 +24,7 @@ def body_from_ground(result,q,onboard,cal):
     if not result['accepted']:return
     lever=qrot(q,[.05,0,.15]);b=cal['utm_to_enu_basis_per_metre'];U=np.array([[b[0][0],b[1][0]],[b[0][1],b[1][1]]])
     d=np.linalg.solve(U,np.array([lever[1],lever[0]]));e=result['x_est']-d[0];n=result['y_est']-d[1]
-    lo,la=transform('EPSG:25829','EPSG:4326',[e],[n]);h=max(1,onboard['agl_baro_m'])
+    lo,la=transform(cal['crs'],'EPSG:4326',[e],[n]);h=max(1,onboard['agl_baro_m'])
     result.update(utm_e_body=float(e),utm_n_body=float(n),lat_visual=la[0],lon_visual=lo[0],
         ned=project(la[0],lo[0],onboard['ref_lat'],onboard['ref_lon']),
         sigma_horizontal_m=max(.7,min(10.,2*(1-result['confidence_score'])+.015*h/max(.25,result['rectified_fraction']))))
@@ -64,12 +64,12 @@ def global_yaw_search(loc,rgb,onboard,cal,step_deg=15,recover_on_rejection=True,
             return {'accepted':False,'reason':'presupuesto agotado en DINO global','confidence_score':0.,'best':None,'diagnostics':[],'rectified_fraction':0.,'utm_e_body':None,'utm_n_body':None,'lat_visual':None,'lon_visual':None},rgb
         vectors.append(descriptor(loc.engine.dino,[a['image'] for a in hypotheses[i:i+6]],loc.engine.cfg))
     vectors=torch.from_numpy(np.concatenate(vectors)).cuda()
-    scores=loc.index_gpu[('T2',index_h)]@vectors.T
+    scores=loc.index_gpu[(loc.region_id,index_h)]@vectors.T
     # Insufficient valid image area can never win the candidate search.
     invalid=[i for i,a in enumerate(hypotheses) if a['fraction']<=.45]
     if invalid:scores[:,invalid]=-float('inf')
-    values,rotations=scores.max(dim=1);top,ids=torch.topk(values,10)
-    tiles=loc.engine.indices[('T2',index_h)][0]
+    values,rotations=scores.max(dim=1);top,ids=torch.topk(values,min(10,len(scores)))
+    tiles=loc.engine.indices[(loc.region_id,index_h)][0]
     candidates=[{**tiles[int(i)],'rank':k,'similarity':float(v),'hypothesis':int(rotations[int(i)])}
         for k,(i,v) in enumerate(zip(ids.cpu(),top.cpu()),1)]
     torch.cuda.synchronize();retrieval_ms=(time.perf_counter()-start)*1000

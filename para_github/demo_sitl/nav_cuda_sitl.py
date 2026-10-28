@@ -35,7 +35,7 @@ def main():
     schedule=FlightSchedule(cfg.get('flight_effective_s',45));total=schedule.duration_s
     report=Path(cfg['report_linux']);report.mkdir(parents=True,exist_ok=True)
     for d in ['imagenes','registros_px4','capturas','diagnosticos']:(report/d).mkdir(exist_ok=True)
-    run=BASE/'ejecuciones'/cfg['run_name'];run.mkdir(exist_ok=False)
+    run=BASE/'ejecuciones'/cfg['run_name'];run.parent.mkdir(parents=True,exist_ok=True);run.mkdir(exist_ok=False);run_started=time.time()
     repo=BASE/'PX4-Autopilot';binpath=repo/'build/px4_sitl_default/bin'
     registry=BASE/'demo_actual.json'
     if registry.exists():
@@ -44,14 +44,15 @@ def main():
     env=os.environ.copy();ax,ay=cfg['A']['enu']
     env.update(PX4_SYS_AUTOSTART='4003',PX4_SIM_MODEL='rc_cessna_ortho',PX4_GZ_WORLD='ortofoto',
         GALLIUM_DRIVER='d3d12',MESA_D3D12_DEFAULT_ADAPTER_NAME='NVIDIA',HEADLESS='1',PX4_GZ_STANDALONE='1',
-        PX4_GZ_MODEL_POSE=f"{ax},{ay},{cfg.get('physical_ground_enu_z_m',0.)+.3},0,0,0",LD_LIBRARY_PATH='/usr/lib/wsl/lib:'+env.get('LD_LIBRARY_PATH',''),
+        PX4_GZ_MODEL_POSE=f"{ax},{ay},{cfg.get('physical_ground_enu_z_m',0.)+.3},0,0,{cfg.get('initial_yaw_enu_rad',0.)}",LD_LIBRARY_PATH='/usr/lib/wsl/lib:'+env.get('LD_LIBRARY_PATH',''),
         GZ_SIM_SERVER_CONFIG_PATH=str(repo/'src/modules/simulation/gz_bridge/server.config'),
         GZ_SIM_SYSTEM_PLUGIN_PATH=str(repo/'build/px4_sitl_default/src/modules/simulation/gz_plugins'))
     if not Path('/usr/lib/wsl/lib').exists():
         env.pop('GALLIUM_DRIVER',None);env.pop('MESA_D3D12_DEFAULT_ADAPTER_NAME',None)
         env['LD_LIBRARY_PATH']=os.environ.get('LD_LIBRARY_PATH','')
-    env['GZ_SIM_RESOURCE_PATH']=':'.join(map(str,[BASE/'assets/models',BASE/'assets/worlds',repo/'Tools/simulation/gz/models',repo/'Tools/simulation/gz/worlds']))
-    server=subprocess.Popen(['gz','sim','-r','-s',str(BASE/'assets/worlds/ortofoto.sdf')],cwd=run,env=env,stdout=(run/'gazebo_server.log').open('w'),stderr=subprocess.STDOUT,start_new_session=True)
+    assets=BASE/cfg.get('sitl_assets_subdir','assets')
+    env['GZ_SIM_RESOURCE_PATH']=':'.join(map(str,[assets/'models',assets/'worlds',repo/'Tools/simulation/gz/models',repo/'Tools/simulation/gz/worlds']))
+    server=subprocess.Popen(['gz','sim','-r','-s',str(assets/'worlds/ortofoto.sdf')],cwd=run,env=env,stdout=(run/'gazebo_server.log').open('w'),stderr=subprocess.STDOUT,start_new_session=True)
     time.sleep(2)
     proc=subprocess.Popen([str(binpath/'px4'),'-d'],cwd=run,env=env,stdout=(run/'px4_gazebo.log').open('w'),stderr=subprocess.STDOUT,start_new_session=True)
     reg={'pid':proc.pid,'server_pid':server.pid,'run':str(run),'etapa':'nav_cuda','world':'ortofoto'};dump(registry,reg)
@@ -196,21 +197,20 @@ def main():
                 elif typ=='GPS_RAW_INT':state['px4'].update(gps_fix=m.fix_type,gps_satellites=m.satellites_visible)
                 elif typ=='GLOBAL_POSITION_INT':state['px4'].update(estimated_lat=m.lat/1e7,estimated_lon=m.lon/1e7)
                 elif typ=='MISSION_CURRENT':state['px4']['mission_seq']=m.seq
+                elif typ=='MISSION_ITEM_REACHED':state['px4']['mission_item_reached']=m.seq
                 elif typ=='STATUSTEXT':event('STATUSTEXT',text=m.text);print('PX4:',m.text,flush=True)
             if types is None or typ in types:return m
         raise TimeoutError(str(types))
     def param(name,value,integer=True):
-        wire=struct.unpack('<f',struct.pack('<i',int(value)))[0] if integer else float(value)
-        with sendlock:link.mav.param_set_send(link.target_system,1,name.encode(),wire,6 if integer else 9)
-        deadline=time.monotonic()+12
-        while time.monotonic()<deadline:
-            with sendlock:link.mav.param_request_read_send(link.target_system,1,name.encode(),-1)
-            try:m=receive(['PARAM_VALUE'],1)
-            except TimeoutError:continue
-            if m.param_id==name:
-                actual=struct.unpack('<i',struct.pack('<f',m.param_value))[0] if integer else m.param_value
-                if abs(actual-value)<.001:event('PARAM',name=name,value=actual);return
-        raise RuntimeError('Parámetro no confirmado: '+name)
+        # Local SITL instance: avoid transporting integer bit patterns as
+        # denormal floats. Read the value back from the actual PX4 process.
+        command=str(binpath/'px4-param')
+        subprocess.run([command,'set',name,str(int(value) if integer else value),'fail'],
+                       capture_output=True,text=True,timeout=5,check=True)
+        reply=subprocess.run([command,'show','-q',name],capture_output=True,text=True,timeout=5,check=True)
+        actual=float(reply.stdout.strip())
+        if abs(actual-value)>=.001:raise RuntimeError('Parámetro no confirmado: '+name)
+        event('PARAM',name=name,value=actual,verified_by='PX4 param show -q; local SITL')
     def orb(topic):
         p=subprocess.run([str(binpath/'px4-listener'),topic,'-n','1'],capture_output=True,text=True,timeout=3)
         return p.stdout
@@ -286,7 +286,8 @@ def main():
         # Mission coordinates come from the surveyed map, never simulator truth.
         latb,lonb=cfg['B']['lat'],cfg['B']['lon'];latc,lonc=cfg['takeoff_target']['lat'],cfg['takeoff_target']['lon']
         waypoints=cfg.get('mission_waypoints',cfg.get('intermediate_waypoints',[])+[cfg['B']]);lastpoint=waypoints[-1]
-        mission=[(22,latc,lonc,50,15,0)]+[(16,p['lat'],p['lon'],50,0,20) for p in waypoints]+[(17,lastpoint['lat'],lastpoint['lon'],50,0,70)]
+        mission=[(22,latc,lonc,50,15,0)]+[(16,p['lat'],p['lon'],50,0,20) for p in waypoints]
+        if not cfg.get('stop_at_mission_end'):mission.append((17,lastpoint['lat'],lastpoint['lon'],50,0,70))
         with sendlock:link.mav.mission_clear_all_send(link.target_system,1)
         receive(['MISSION_ACK'])
         with sendlock:link.mav.mission_count_send(link.target_system,1,len(mission))
@@ -334,6 +335,10 @@ def main():
             except TimeoutError:pass
             if state['start_sim_s'] is None:continue
             elapsed=state['sim_s']-state['start_sim_s']
+            if cfg.get('stop_at_mission_end') and state['px4'].get('mission_item_reached',-1)>=len(mission)-1:
+                event('PLANNED_ROUTE_COMPLETE',last_item=len(mission)-1);state['phase']='FIN RUTA · PAUSADO';break
+            if cfg.get('stop_at_mission_end') and elapsed>8 and state['mode'] not in ['MISSION','AUTO.MISSION']:
+                event('PLANNED_ROUTE_ABORT',mode=state['mode']);state['phase']='ABORTADO · PAUSADO';break
             if schedule.cut_due(state['start_sim_s'],state['sim_s']) and not cut_requested:
                 cut_requested=True;state['phase']='GNSS OUT (solicitud)';event('GNSS_OUT_REQUEST')
                 param('EKF2_GPS_CTRL',0);param('SIM_GPS_USED',0);state['gnss_cut_sim_s']=state['sim_s'];state['phase']='GNSS OUT'
@@ -347,8 +352,9 @@ def main():
         pause();done=True;state['done']=True
         # Keep correction HTTP service and files alive for the final capture.
         closing_deadline=time.monotonic()+2
-        while state.get('last_completed_second',0)<total and time.monotonic()<closing_deadline:time.sleep(.02)
-        event('FINAL_CAPTURE_DRAIN',completed=state.get('last_completed_second',0),timeout=state.get('last_completed_second',0)<total)
+        expected=len(frames)
+        while state.get('last_completed_second',0)<expected and time.monotonic()<closing_deadline:time.sleep(.02)
+        event('FINAL_CAPTURE_DRAIN',completed=state.get('last_completed_second',0),timeout=state.get('last_completed_second',0)<expected)
         event('FLIGHT_END',captures=len(frames))
         dump(run/'resumen_control.json',{**state,'timesync_requests':request_count,'actual_duration_sim_s':state['sim_s']-(state['start_sim_s'] or state['sim_s'])})
         print('Vuelo terminado; pausado. Exportando registros.',flush=True)
@@ -368,8 +374,9 @@ def main():
         for p in run.iterdir():
             if p.is_file():shutil.copy2(p,dest/p.name)
         # ULog is written to PX4's shared rootfs; match this run by mtime.
-        for p in (repo/'build/px4_sitl_default/rootfs/log').rglob('*.ulg'):
-            if p.stat().st_mtime>=run.stat().st_ctime:shutil.copy2(p,dest/p.name)
+        for logdir in [run/'log',repo/'build/px4_sitl_default/rootfs/log']:
+            for p in logdir.rglob('*.ulg'):
+                if p.stat().st_mtime>=run_started:shutil.copy2(p,dest/p.name)
         dump(report/'control_final.json',{**state,'timesync_requests':request_count})
         time.sleep(8)
 

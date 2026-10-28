@@ -14,9 +14,12 @@ from geometria_navegacion import qrot,project
 from rasterio.warp import transform
 
 class CudaNavigatorLocalizer:
-    def __init__(self):
+    def __init__(self,config_path=None):
         if not torch.cuda.is_available():raise RuntimeError('PRUEBA NO VÁLIDA: CUDA no disponible')
-        cfg=setup();cfg.pop('zones');cfg['device']='cuda:0';cfg['regions']=[r for r in cfg['regions'] if r['id']=='T2']
+        cfg=setup(config_path);cfg.pop('zones',None);cfg['device']='cuda:0'
+        region=cfg.get('navigation_region','T2');cfg['regions']=[r for r in cfg['regions'] if r['id']==region]
+        if len(cfg['regions'])!=1:raise ValueError('La región de navegación no existe o está duplicada')
+        self.region_id=region
         cfg['camera']['heights_m']=[50,100,200,300,400]
         torch.set_float32_matmul_precision('high')
         t=time.perf_counter();self.engine=Localizer(cfg);self.engine.warmup()
@@ -83,8 +86,8 @@ class CudaNavigatorLocalizer:
         valid_fraction=float((mask>0).mean())
         index_h=min([50,100,200,300,400],key=lambda a:abs(np.log(a/h)))
         vec=descriptor(self.engine.dino,[rectified],self.engine.cfg)[0]
-        scores=self.index_gpu[('T2',index_h)]@torch.from_numpy(vec).cuda()
-        values,ids=torch.topk(scores,10);tiles=self.engine.indices[('T2',index_h)][0]
+        scores=self.index_gpu[(self.region_id,index_h)]@torch.from_numpy(vec).cuda()
+        values,ids=torch.topk(scores,min(10,len(scores)));tiles=self.engine.indices[(self.region_id,index_h)][0]
         candidates=[{**tiles[int(i)],'rank':rank,'similarity':float(v)} for rank,(i,v) in enumerate(zip(ids.cpu(),values.cpu()),1)]
         result=self.engine.verify(rectified,candidates,h,'lightglue')
         events[1].record();torch.cuda.synchronize()
@@ -99,7 +102,7 @@ class CudaNavigatorLocalizer:
             U=np.array([[b[0][0],b[1][0]],[b[0][1],b[1][1]]])
             delta=np.linalg.solve(U,np.array([lever[1],lever[0]]))
             e=result['x_est']-delta[0];n=result['y_est']-delta[1]
-            lon,lat=transform('EPSG:25829','EPSG:4326',[e],[n]);ned=project(lat[0],lon[0],onboard['ref_lat'],onboard['ref_lon'])
+            lon,lat=transform(calibration['crs'],'EPSG:4326',[e],[n]);ned=project(lat[0],lon[0],onboard['ref_lat'],onboard['ref_lon'])
             sigma=max(.7,min(10.,2*(1-result['confidence_score'])+.015*h/max(.25,valid_fraction)))
             # An empirical, conservative uncertainty, NOT a calibrated guarantee.
             result.update(utm_e_body=float(e),utm_n_body=float(n),lat_visual=lat[0],lon_visual=lon[0],ned=ned,

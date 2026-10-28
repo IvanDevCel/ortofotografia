@@ -10,7 +10,7 @@ def validate_onboard(ob,*,temporal):
     if temporal and not math.isfinite(ob['capture_sim_s']):raise ValueError('Marca de captura invalida')
 
 def route_points(cfg):
-    if cfg.get('mission_waypoints'):return [('A',cfg['A'])]+[(p.get('label',str(i)),p) for i,p in enumerate(cfg['mission_waypoints'],1)]
+    if cfg.get('mission_waypoints'):return [(cfg.get('start_label','A'),cfg['A'])]+[(p.get('label',str(i)),p) for i,p in enumerate(cfg['mission_waypoints'],1)]
     return [('A',cfg['A'])]+[(chr(ord('C')+i),p) for i,p in enumerate(cfg.get('intermediate_waypoints',[]))]+[('B',cfg['B'])]
 
 class AbsoluteVideoClock:

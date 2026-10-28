@@ -27,10 +27,10 @@ def dino(download=False,device='cpu'):
     return model.eval().to(device)
 
 
-def local_models(device='cpu'):
+def local_models(device='cpu',cfg=None):
     from lightglue import SuperPoint, LightGlue
     from comun import config
-    sp=SuperPoint(max_num_keypoints=config()['verification']['max_keypoints']).eval().to(device)
+    sp=SuperPoint(max_num_keypoints=(cfg or config())['verification']['max_keypoints']).eval().to(device)
     lg=LightGlue(features='superpoint',flash=False,depth_confidence=0.95,width_confidence=0.99).eval().to(device)
     return sp,lg
 

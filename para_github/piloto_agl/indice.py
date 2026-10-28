@@ -51,11 +51,12 @@ def grid(reg,src,agl,cfg):
 
 
 def build(cfg):
-    (OUT/'indices').mkdir(parents=True,exist_ok=True)
+    out=ROOT/cfg['index_directory'] if cfg.get('index_directory') else OUT/'indices'
+    out.mkdir(parents=True,exist_ok=True)
     with Resources() as loading:
-        model=dino()
+        model=dino(device=cfg.get('device','cpu'))
         descriptor(model,[np.zeros((168,224,3),dtype=np.uint8)],cfg)
-    save_json(OUT/'carga_dino_indice.json',loading.result())
+    save_json(out.parent/'carga_dino_indice.json',loading.result())
     records=[]
     for reg in cfg['regions']:
         with rasterio.open(ROOT/reg['file']) as src:
@@ -68,8 +69,8 @@ def build(cfg):
                         arrays=[read_tile(src,t['col'],t['row'],t['width'],t['height'],224,168) for t in batch]
                         vectors.append(descriptor(model,arrays,cfg))
                     stem=f"{reg['id']}_h{height:03d}"
-                    save_json(OUT/'indices'/f'{stem}.json',tiles)
-                    np.savez_compressed(OUT/'indices'/f'{stem}.npz',descriptors=np.concatenate(vectors))
+                    save_json(out/f'{stem}.json',tiles)
+                    np.savez_compressed(out/f'{stem}.npz',descriptors=np.concatenate(vectors))
                 fp=footprint(cfg['camera'],height)
                 factor=cfg['index']['tile_footprint_factor']
                 stride=cfg['index']['stride_footprint_factor']
@@ -77,20 +78,21 @@ def build(cfg):
                 record={'region':reg['id'],'agl_m':height,'tiles':len(tiles),'area_km2':reg['width']*reg['height']*src.res[0]**2/1e6,
                         **res.result(),'full_tiff_tiles_estimate':full_count,
                         'full_tiff_seconds_linear_estimate':res.seconds*full_count/len(tiles),
-                        'descriptor_file_bytes':(OUT/'indices'/f'{stem}.npz').stat().st_size}
+                        'descriptor_file_bytes':(out/f'{stem}.npz').stat().st_size}
                 records.append(record)
-                save_csv(OUT/'preparacion.csv',records)
-                save_json(OUT/'preparacion.json',records)
+                save_csv(out.parent/'preparacion.csv',records)
+                save_json(out.parent/'preparacion.json',records)
                 print(f"Índice {stem}: {len(tiles)} teselas, {res.seconds:.2f} s, RSS pico {res.peak/2**20:.0f} MiB",flush=True)
 
 
 def load_indices(cfg):
     result={}
+    out=ROOT/cfg['index_directory'] if cfg.get('index_directory') else OUT/'indices'
     for reg in cfg['regions']:
         for height in cfg['camera']['heights_m']:
             stem=f"{reg['id']}_h{height:03d}"
-            tiles=json.loads((OUT/'indices'/f'{stem}.json').read_text(encoding='utf8'))
-            with np.load(OUT/'indices'/f'{stem}.npz',allow_pickle=False) as archive:
+            tiles=json.loads((out/f'{stem}.json').read_text(encoding='utf8'))
+            with np.load(out/f'{stem}.npz',allow_pickle=False) as archive:
                 vectors=archive['descriptors'].copy()
             result[(reg['id'],height)]=(tiles,vectors)
     return result

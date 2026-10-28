@@ -73,7 +73,7 @@ def main():
     rows=[]
     for pred in preds:
         n=pred['second'];t=pred['capture_sim_s'];ob=pred['onboard'];truthval=tr_at(t);raw=truthval['pose'];xyz=raw['xyz_enu'];ue,un=utm(xyz)
-        lon,lat=transform('EPSG:25829','EPSG:4326',[float(ue)],[float(un)])
+        lon,lat=transform(cfg['georeference']['crs'],'EPSG:4326',[float(ue)],[float(un)])
         flags=at('estimator_status_flags',t);lp=at('vehicle_local_position',t);gp=at('vehicle_global_position',t);gps=at('sensor_gps',t)
         phase='GNSS ON' if t<cut else 'GNSS OUT'
         admitted=[c for c in corrections if c.get('admitted_by_companion') and c['arrival_sim_s']<=t]
@@ -135,7 +135,7 @@ def main():
         if pred['accepted']:
             row.update(horizontal_visual_error_m=math.hypot(pred['utm_e_body']-ue,pred['utm_n_body']-un),latitude_error_deg=pred['lat_visual']-lat[0],longitude_error_deg=pred['lon_visual']-lon[0])
         if gp.get('lat') is not None:
-            epx,npx=transform('EPSG:4326','EPSG:25829',[gp['lon']],[gp['lat']]);row['px4_position_error_m']=math.hypot(epx[0]-ue,npx[0]-un)
+            epx,npx=transform('EPSG:4326',cfg['georeference']['crs'],[gp['lon']],[gp['lat']]);row['px4_position_error_m']=math.hypot(epx[0]-ue,npx[0]-un)
             row['remaining_B_px4_m']=math.hypot(epx[0]-cfg['B']['utm_e'],npx[0]-cfg['B']['utm_n'])
         rows.append(row)
     with (out/'datos.csv').open('w',newline='',encoding='utf-8-sig') as f:
