@@ -1,0 +1,18 @@
+{
+  "seed": 20261028,
+  "camera": {"width": 640, "height": 480, "hfov_deg": 70.0, "heights_m": [50, 100, 200, 300, 400], "max_agl_m": 400},
+  "regions": [
+    {"id": "T1", "file": "PNOA_MA_OF_ETRS89_HU29_h25_0001_2.tif", "col": 71000, "row": 45000, "width": 8000, "height": 8000},
+    {"id": "T2", "file": "PNOA_MA_OF_ETRS89_HU29_h25_0002_4.tif", "col": 24000, "row": 33000, "width": 8000, "height": 8000}
+  ],
+  "zones": [
+    {"id": "mar", "region": "T1", "u": 0.38, "v": 0.35, "terrain": "mar"},
+    {"id": "costa", "region": "T1", "u": 0.53, "v": 0.63, "terrain": "agua y espuma junto a costa"},
+    {"id": "bosque", "region": "T2", "u": 0.39, "v": 0.47, "terrain": "bosque"},
+    {"id": "camino", "region": "T2", "u": 0.69, "v": 0.62, "terrain": "camino y bosque"}
+  ],
+  "index": {"tile_footprint_factor": 1.75, "stride_footprint_factor": 0.75, "max_stride_m": 120, "descriptor_width": 224, "descriptor_height": 168, "batch_size": 16, "top_k": 10},
+  "verification": {"max_keypoints": 384, "superpoint_resize": 448, "min_inliers": 16, "min_inlier_ratio": 0.30, "min_coverage": 0.08, "ransac_px": 3.0, "max_median_reprojection_px": 2.5, "area_ratio_min": 0.4, "area_ratio_max": 2.5, "ambiguity_ratio": 0.90, "ambiguity_distance_m": 20},
+  "evaluation": {"correct_retrieval_coverage": 0.80, "success_error_m": 5.0},
+  "threads": 4
+}

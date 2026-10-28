@@ -1,0 +1,2 @@
+# Para CPU/CUDA utilizar tools/equipo.py instalar; elige torch sin mezclar indices.
+-r requirements/base.txt

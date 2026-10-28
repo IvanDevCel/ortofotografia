@@ -1,0 +1,31 @@
+{
+  "run": "ultima_ABCA_20261028_224119",
+  "route": "A-B-C-A",
+  "ordered_visits": [
+    {
+      "point": "B",
+      "visited_in_order": true,
+      "first_entry_flight_s": 43.412,
+      "minimum_distance_m": 2.197928994963569,
+      "closest_flight_s": 44.788000000000004
+    },
+    {
+      "point": "C",
+      "visited_in_order": true,
+      "first_entry_flight_s": 78.012,
+      "minimum_distance_m": 0.1700201764838793,
+      "closest_flight_s": 79.392
+    },
+    {
+      "point": "A (vuelta)",
+      "visited_in_order": true,
+      "first_entry_flight_s": 111.108,
+      "minimum_distance_m": 0.4884568081432809,
+      "closest_flight_s": 112.46800000000002
+    }
+  ],
+  "returned_to_A": true,
+  "final_distance_to_A_m": 71.91224393571306,
+  "after_return": "orbit around A, no landing",
+  "evaluation_only": true
+}

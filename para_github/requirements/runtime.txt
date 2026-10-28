@@ -1,0 +1,7 @@
+-r base.txt
+opencv-python==5.0.0.93
+psutil==7.2.2
+einops==0.8.2
+omegaconf==2.4.0
+openpyxl>=3.1.5,<4
+lightglue @ https://github.com/cvg/LightGlue/archive/5a650c444718caffc2669dc0094cde908f42dd73.zip

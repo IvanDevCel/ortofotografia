@@ -1,0 +1,72 @@
+{
+  "source": "PNOA_MA_OF_ETRS89_HU29_h25_0002_4.tif",
+  "crs": "EPSG:25829",
+  "source_window": {
+    "col": 0,
+    "row": 0,
+    "width": 50000,
+    "height": 50000
+  },
+  "resolution_grid_m_per_pixel": 0.15000000000000052,
+  "width_grid_m": 7500.000000000026,
+  "height_grid_m": 7500.000000000026,
+  "texture_pixels": 8192,
+  "texture_m_grid_per_pixel": 0.9155273437500032,
+  "texture_center_enu": [
+    -420.4616186816504,
+    1807.6106974094828
+  ],
+  "detail_center_enu": [
+    -407.41753200217534,
+    -657.907276983722
+  ],
+  "detail_width_grid_m": 614.4000000000021,
+  "detail_source_window": [
+    23309,
+    39381,
+    4096,
+    4096
+  ],
+  "utm_center": [
+    609810.0,
+    4839670.0
+  ],
+  "longitude_deg": -7.637166203059069,
+  "latitude_deg": 43.70192893667712,
+  "utm_to_enu_basis_per_metre": [
+    [
+      1.0001162727177841,
+      -0.016446378392177278
+    ],
+    [
+      0.016439280022973585,
+      1.0001165706294461
+    ]
+  ],
+  "enu_vertices": [
+    [
+      -4232.544941459506,
+      -1881.1525234802884,
+      0.08
+    ],
+    [
+      3268.327103923902,
+      -2004.5003614216184,
+      0.08
+    ],
+    [
+      3391.621704096204,
+      5496.373918299254,
+      0.08
+    ],
+    [
+      -4109.250341287203,
+      5619.721756240584,
+      0.08
+    ]
+  ],
+  "grid_north_bearing_deg": 0.9417067721349132,
+  "terrain_model": "plano horizontal; z=0; sin DEM",
+  "camera": "640x480, HFOV 70 grados, montaje ventral; acompaña alabeo del avión",
+  "uv": "SW=(0,0), SE=(1,0), NE=(1,1), NW=(0,1)"
+}
