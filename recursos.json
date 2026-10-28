@@ -1,0 +1,13 @@
+{
+  "original_required": [
+    ".modelos_agl/",
+    "outputs/piloto_agl/indices/",
+    "PNOA_MA_OF_ETRS89_HU29_h25_0001_2.tif",
+    "PNOA_MA_OF_ETRS89_HU29_h25_0002_4.tif"
+  ],
+  "texture_mappings": {
+    "outputs/demo_sitl/assets/models/ortho_terreno/materials/textures/ortofoto.png": "sitl_assets/models/ortho_terreno/materials/textures/ortofoto.png",
+    "outputs/demo_sitl/assets/models/ortho_terreno/materials/textures/poblacion_detalle.png": "sitl_assets/models/poblacion_detalle/materials/textures/poblacion_detalle.png",
+    "outputs/demo_integrada/textura_T2.png": "sitl_assets/models/indice_T2/materials/textures/textura_T2.png"
+  }
+}

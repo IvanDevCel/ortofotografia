@@ -1,0 +1,24 @@
+{
+  "physical_ground_pose_before": "0 0 0.24 0 -0 0",
+  "physical_ground_pose_after": "0 0 0 0 -0 0",
+  "ortho_top_z_m": 0.003,
+  "layers": [
+    {
+      "name": "ortho_terreno",
+      "before": "-420.4616186816504 1807.6106974094828 0.08 0 0 -0.016442984283051236",
+      "after": "-420.4616186816504 1807.6106974094828 0.001 0 0 -0.016442984283051236"
+    },
+    {
+      "name": "poblacion_detalle",
+      "before": "-407.41753200217534 -657.907276983722 0.16 0 0 -0.016442984283051236",
+      "after": "-407.41753200217534 -657.907276983722 0.002 0 0 -0.016442984283051236"
+    },
+    {
+      "name": "indice_T2",
+      "before": "0.0 0.0 .24 0 0 -0.016442984283051236",
+      "after": "0.0 0.0 0.003 0 0 -0.016442984283051236"
+    }
+  ],
+  "reason": "Restore ground at z=0; layer photos at 1/2/3 mm to avoid both z-fighting and burying the 1m aircraft; unchanged horizontal scale/orientation",
+  "utc": "2026-10-28T21:25:29.105761+00:00"
+}

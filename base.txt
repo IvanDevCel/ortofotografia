@@ -1,0 +1,6 @@
+# Versiones comprobadas con Python 3.14.5 en Windows.
+rasterio==1.5.2
+matplotlib==3.11.2
+# Usadas directamente por generar_ensayo.py (también dependencias de las anteriores).
+numpy==2.5.4
+pillow==13.0.0

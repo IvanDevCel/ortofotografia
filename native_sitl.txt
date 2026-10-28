@@ -1,0 +1,5 @@
+# Dentro de Ubuntu; gz.transport13 y gz.msgs10 proceden de apt/Gazebo, no de pip.
+pymavlink==2.4.50
+pyulog==1.3.0
+Pillow>=10
+numpy>=1.26
