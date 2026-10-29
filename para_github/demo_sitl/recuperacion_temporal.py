@@ -18,7 +18,7 @@ class TemporalRecovery:
         from coordinacion_demo import validate_onboard
         validate_onboard(ob,temporal=True)
         start=time.perf_counter();deadline=start+budget_s;capture=ob['capture_sim_s'];h=max(1.,ob['agl_baro_m']);ih=min([50,100,200,300,400],key=lambda x:abs(np.log(x/h)))
-        tiles=loc.engine.indices[('T2',ih)][0];basis=np.array(cal['utm_to_enu_basis_per_metre']).T
+        tiles=loc.engine.indices[(loc.region_id,ih)][0];basis=np.array(cal['utm_to_enu_basis_per_metre']).T
         s=self.state;age=None;radius=None
         if s is not None:
             dt=capture-s['t'];age=capture-s['last_visual_t']

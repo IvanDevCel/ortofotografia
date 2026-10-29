@@ -12,5 +12,8 @@ for p in cfg['mission_waypoints']:
     visits.append(dict(point=p['label'],visited_in_order=hit is not None,first_entry_flight_s=None if hit is None else float(times[hit]),minimum_distance_m=float(ds[best]),closest_flight_s=float(times[best])))
     cursor=(hit+1) if hit is not None else len(times)
     if hit is None:break
-result=dict(run=m['name'],route='A-B-C-A',ordered_visits=visits,returned_to_A=len(visits)==3 and all(v['visited_in_order'] for v in visits),final_distance_to_A_m=float(np.linalg.norm(xy[-1]-np.array([cfg['A']['utm_e'],cfg['A']['utm_n']]))),after_return='orbit around A, no landing',evaluation_only=True)
+last=cfg['mission_waypoints'][-1];ends_at_a=np.hypot(last['utm_e']-cfg['A']['utm_e'],last['utm_n']-cfg['A']['utm_n'])<.01
+route=cfg.get('start_label','A')+'-'+'-'.join(p.get('label','?').split(' ')[0] for p in cfg['mission_waypoints'])
+completed=len(visits)==len(cfg['mission_waypoints']) and all(v['visited_in_order'] for v in visits)
+result=dict(run=m['name'],route=route,ordered_visits=visits,completed_route=completed,returned_to_A=bool(ends_at_a and completed),final_distance_to_A_m=float(np.linalg.norm(xy[-1]-np.array([cfg['A']['utm_e'],cfg['A']['utm_n']]))),after_return='pause at final waypoint' if cfg.get('stop_at_mission_end') else 'orbit around A, no landing',evaluation_only=True)
 (out/'recorrido_verificado.json').write_text(json.dumps(result,indent=2));print(json.dumps(result))

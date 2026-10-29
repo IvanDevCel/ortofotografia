@@ -35,7 +35,7 @@ def matched_camera_position(result,Hrect,tile,onboard,cal):
     camera_xy=ground+hcam*optical[:2]/optical[2]
     body_xy=camera_xy-lever[:2]
     ebody,nbody=origin+np.linalg.solve(basis,body_xy)
-    lon,lat=transform('EPSG:25829','EPSG:4326',[ebody],[nbody])
+    lon,lat=transform(cal['crs'],'EPSG:4326',[ebody],[nbody])
     result.update(utm_e_body=float(ebody),utm_n_body=float(nbody),lat_visual=lat[0],lon_visual=lon[0],
         ned=project(lat[0],lon[0],onboard['ref_lat'],onboard['ref_lon']),
         camera_utm=(origin+np.linalg.solve(basis,camera_xy)).tolist(),
